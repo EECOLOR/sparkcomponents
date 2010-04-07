@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" version="3">
+  <includeClasses>
+    <classEntry path="ee.spark.components.SkinnableItemRenderer"/>
+    <classEntry path="ee.spark.skins.ItemRendererSkin"/>
+    <classEntry path="ee.spark.components.support.MenuBranchItem"/>
+    <classEntry path="ee.spark.skins.MenuBranchItemSkin"/>
+    <classEntry path="ee.spark.components.Menu"/>
+    <classEntry path="ee.spark.components.MenuBar"/>
+    <classEntry path="ee.spark.components.support.MenuSeparator"/>
+    <classEntry path="ee.spark.skins.MenuSeparatorSkin"/>
+    <classEntry path="ee.spark.components.support.MenuLeafItem"/>
+    <classEntry path="ee.spark.skins.MenuSkin"/>
+    <classEntry path="layouts.VariableRowHeightVerticalLayout"/>
+    <classEntry path="ee.spark.components.support.MinimalLayoutElement"/>
+    <classEntry path="ee.spark.components.MenuEvent"/>
+  </includeClasses>
+  <includeResources>
+    <resourceEntry destPath="defaults.css" sourcePath="defaults.css"/>
+  </includeResources>
+  <namespaceManifests/>
+</flexLibProperties>
