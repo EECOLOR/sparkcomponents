@@ -1,0 +1,33 @@
+@namespace "library://ns.adobe.com/flex/spark";
+@namespace c "ee.spark.components.*";
+@namespace s "ee.spark.components.support.*";
+
+c|SkinnableItemRenderer
+{
+	skin-class: ClassReference("ee.spark.skins.ItemRendererSkin");
+}
+
+c|Menu
+{
+	skin-class: ClassReference("ee.spark.skins.MenuSkin");
+}
+
+s|MenuLeafItem
+{
+	skin-class: ClassReference("ee.spark.skins.MenuLeafItemSkin");
+}
+
+s|MenuBranchItem
+{
+	skin-class: ClassReference("ee.spark.skins.MenuBranchItemSkin");
+}
+
+c|MenuBar s|MenuBranchItem
+{
+	skin-class: ClassReference("ee.spark.skins.MenuBarBranchItemSkin");
+}
+
+s|MenuSeparator
+{
+	skin-class: ClassReference("ee.spark.skins.MenuSeparatorSkin");
+}
