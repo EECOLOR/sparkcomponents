@@ -23,6 +23,7 @@
 			<s:SolidColor color="0xFFFFFF" 
 						  color.hovered="0xCEDBEF"
 						  color.selected="0xA8C6EE"
+						  color.normalAndShowsCaret="0xCCFFFF"
 						  alpha.dragging="0" />
 		</s:fill>
 	</s:Rect>

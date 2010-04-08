@@ -1,5 +1,8 @@
 package ee.spark.components
 {
+	import ee.spark.components.support.IHoverable;
+	
+	import flash.debugger.enterDebugger;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	
@@ -25,7 +28,7 @@ package ee.spark.components
 	[SkinState("hovered")]
 	[SkinState("normal")]
 	
-	public class SkinnableItemRenderer extends SkinnableComponent implements IItemRenderer
+	public class SkinnableItemRenderer extends SkinnableComponent implements IItemRenderer, IHoverable
 	{
 		[SkinPart(required="false")]
 		public var labelDisplay:TextBase;
@@ -115,12 +118,12 @@ package ee.spark.components
 			}
 		}
 
-		protected function get hovered():Boolean
+		public function get hovered():Boolean
 		{
 			return _hovered;
 		}
 		
-		protected function set hovered(value:Boolean):void
+		public function set hovered(value:Boolean):void
 		{
 			if (_hovered != value)
 			{

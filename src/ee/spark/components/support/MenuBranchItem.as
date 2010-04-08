@@ -1,29 +1,17 @@
 package ee.spark.components.support
 {
 	import ee.spark.components.Menu;
-	import ee.spark.components.MenuEvent;
+	import ee.spark.events.MenuEvent;
 	
-	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.InteractiveObject;
-	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
-	import flash.ui.Keyboard;
 	
 	import mx.collections.XMLListCollection;
-	import mx.core.IFactory;
-	import mx.core.UIComponent;
-	import mx.events.FlexEvent;
+	import mx.core.IUIComponent;
 	import mx.events.StateChangeEvent;
-	import mx.managers.FocusManager;
 	import mx.managers.IFocusManagerComponent;
-	
-	import spark.components.DataGroup;
-	import spark.components.IItemRenderer;
-	import spark.components.PopUpAnchor;
-	import spark.components.supportClasses.DropDownListBase;
-	import spark.skins.spark.ListSkin;
 	
 	[SkinState("open")]
 	
@@ -95,11 +83,11 @@ package ee.spark.components.support
 		
 		private function _skinCurrentStateChangeHandler(e:StateChangeEvent):void
 		{
-			if (e.newState == "open" && showsCaret)
+			if (e.newState == "open")
 			{
 				focusManager.setFocus(menu);
-				menu.moveNext();
-			} else if (e.oldState == "open" && showsCaret)
+				if (showsCaret) menu.moveNext();
+			} else if (e.oldState == "open")
 			{
 				focusManager.setFocus(IFocusManagerComponent(owner));
 			}
@@ -123,14 +111,17 @@ package ee.spark.components.support
 		
 		private function _menuKeyDownHandler(e:KeyboardEvent):void
 		{
-			if (open && (e.keyCode == Keyboard.ESCAPE || e.keyCode == Keyboard.LEFT)) open = false;
+			//manual bubbling
+			dispatchEvent(e);
+			//TODO fix
+			//if (open && (e.keyCode == Keyboard.ESCAPE || e.keyCode == Keyboard.LEFT)) open = false;
 		}
 		
 		private function _isSubMenu(interactiveObject:InteractiveObject):Boolean
 		{
 			var isSubMenu:Boolean = false;
 			
-			var component:UIComponent = UIComponent(interactiveObject);
+			var component:IUIComponent = IUIComponent(interactiveObject);
 			var owner:DisplayObjectContainer;
 			
 			while (component)
@@ -142,9 +133,9 @@ package ee.spark.components.support
 				}
 				
 				owner = component.owner;
-				if (owner is UIComponent)
+				if (owner is IUIComponent)
 				{
-					component = UIComponent(owner);
+					component = IUIComponent(owner);
 				} else
 				{
 					component = null;
@@ -154,27 +145,34 @@ package ee.spark.components.support
 			return isSubMenu;
 		}
 
+		/**
+		 * Prevent rollover to set hovered
+		 */
+		override protected function rollOverHandler(e:MouseEvent):void
+		{
+		}		
+		
+		/**
+		 * Prevent rollout to remove hovered and if needed
+		 * dispatch rollout for menu
+		 */
 		override protected function rollOutHandler(e:MouseEvent):void
 		{
 			if (!_isSubMenu(e.relatedObject))
 			{
-				showsCaret = false;
-				super.rollOutHandler(e);
+				//TODO remove
+				//showsCaret = false;
 				
 				if (e.currentTarget == menu)
 				{
 					//we need to manually bubble for menu events
 					dispatchEvent(new MouseEvent(MouseEvent.ROLL_OUT, true, false, e.localX, e.localY, e.relatedObject, e.ctrlKey, e.altKey, e.shiftKey));
 				}
+			} else
+			{
+				e.stopImmediatePropagation();
 			}
 		}
-		
-		override protected function rollOverHandler(e:MouseEvent):void
-		{
-			super.rollOverHandler(e);
-		}
-		
-		
 		
 		private function _setDataProvider():void
 		{
@@ -193,13 +191,6 @@ package ee.spark.components.support
 				_open = value;
 				invalidateSkinState();
 			}
-		}
-		
-		override protected function set hovered(value:Boolean):void
-		{
-			super.hovered = value;
-			
-			open = value;
 		}
 		
 		override public function set showsCaret(value:Boolean):void
