@@ -1,4 +1,4 @@
-package ee.spark.components
+package ee.spark.events
 {
 	import flash.events.Event;
 	

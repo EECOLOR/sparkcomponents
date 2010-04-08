@@ -46,7 +46,7 @@
 		</s:fill>
 	</s:Rect>
 	
-	<s:Scroller left="0" top="0" right="0" bottom="0" id="scroller" minViewportInset="1" hasFocusableChildren="false">
+	<s:Scroller id="scroller" left="0" top="0" right="0" bottom="0" minViewportInset="1" hasFocusableChildren="false">
 		<s:DataGroup id="dataGroup">
 			<s:layout>
 				<s:VerticalLayout gap="0" horizontalAlign="contentJustify" requestedRowCount="-1"
