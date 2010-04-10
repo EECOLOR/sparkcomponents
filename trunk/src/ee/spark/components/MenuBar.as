@@ -13,6 +13,7 @@ package ee.spark.components
 	import mx.core.IUIComponent;
 	import mx.core.IVisualElement;
 	import mx.core.mx_internal;
+	import mx.managers.IFocusManagerComponent;
 	
 	import spark.core.NavigationUnit;
 	import spark.layouts.HorizontalLayout;
@@ -70,10 +71,25 @@ package ee.spark.components
 			switch (e.keyCode)
 			{
 				case NavigationUnit.LEFT:
+				{
+					focusKeyDownHandler(e);
+					break;
+				}
 				case NavigationUnit.RIGHT:
 				{
-					//TODO only pass on RIGHT if we are not on a branch sub item
-					focusKeyDownHandler(e);
+					var focussedItem:IFocusManagerComponent = focusManager.getFocus();
+					var preventAction:Boolean = false;
+					
+					if (focussedItem is Menu)
+					{
+						var menu:Menu = Menu(focussedItem);
+						if (isBranch(menu.dataProvider.getItemAt(menu.caretIndex)))
+						{
+							preventAction = true;
+						}
+					}
+					
+					if (!preventAction) focusKeyDownHandler(e);
 					break;
 				}
 				default:
