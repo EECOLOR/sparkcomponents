@@ -13,11 +13,24 @@ package ee.spark.components.support
 	import mx.events.StateChangeEvent;
 	import mx.managers.IFocusManagerComponent;
 	
+	/**
+	 * Indicates the sub menu is visible, or open.
+	 */
 	[SkinState("open")]
 	
+	/**
+	 * This item renderer represents a branch in the menu. In other words, a renderer 
+	 * which contains a sub menu.
+	 * 
+	 * <p>The default skin is ee.spark.skins.MenuBranchItem. If the host component is 
+	 * a MenuBar, the default skin ee.spark.skins.MenuBarBranchItem.</p>
+	 */
 	public class MenuBranchItem extends MenuLeafItem
 	{
 		[SkinPart(required="true")]
+		/**
+		 * The sub menu. Shown when skin state is open.
+		 */
 		public var menu:Menu;
 		
 		private var _open:Boolean;
@@ -26,6 +39,10 @@ package ee.spark.components.support
 		{
 		}
 		
+		/**
+		 * Overridden in order to listen to StateChangeEvent.CURRENT_STATE_CHANGE. Yhis 
+		 * is used to shift focus to the sub menu on opening and back when closing.
+		 */
 		override protected function attachSkin():void
 		{
 			super.attachSkin();
@@ -33,6 +50,9 @@ package ee.spark.components.support
 			skin.addEventListener(StateChangeEvent.CURRENT_STATE_CHANGE, _skinCurrentStateChangeHandler);
 		}
 		
+		/**
+		 * Overridden to remove StateChangeEvent.CURRENT_STATE_CHANGE handler.
+		 */
 		override protected function detachSkin():void
 		{
 			skin.removeEventListener(StateChangeEvent.CURRENT_STATE_CHANGE, _skinCurrentStateChangeHandler);
@@ -40,6 +60,10 @@ package ee.spark.components.support
 			super.detachSkin();
 		}
 		
+		/**
+		 * Overridden in order to add listeners to the menu, set the owner of the menu 
+		 * to this and to set the dataProvider
+		 */
 		override protected function partAdded(partName:String, instance:Object):void
 		{
 			super.partAdded(partName, instance);
@@ -49,7 +73,6 @@ package ee.spark.components.support
 				case menu:
 				{
 					menu.owner = this;
-					menu.addEventListener(MouseEvent.ROLL_OVER, _menuRollOverHandler);
 					menu.addEventListener(MouseEvent.ROLL_OUT, _menuRollOutHandler);
 					menu.addEventListener(MenuEvent.MENU_ITEM_CLICK, _menuItemClickHandler);
 					menu.addEventListener(KeyboardEvent.KEY_DOWN, _menuKeyDownHandler);
@@ -59,14 +82,18 @@ package ee.spark.components.support
 			}
 		}
 		
+		/**
+		 * Overridden in order to remove listeners from the menu.
+		 */
 		override protected function partRemoved(partName:String, instance:Object):void
 		{
 			switch (instance)
 			{
 				case menu:
 				{
-					menu.removeEventListener(MouseEvent.ROLL_OVER, _menuRollOverHandler);
 					menu.removeEventListener(MouseEvent.ROLL_OUT, _menuRollOutHandler);
+					menu.removeEventListener(MenuEvent.MENU_ITEM_CLICK, _menuItemClickHandler);
+					menu.removeEventListener(KeyboardEvent.KEY_DOWN, _menuKeyDownHandler);
 					break;
 				}
 			}
@@ -74,6 +101,9 @@ package ee.spark.components.support
 			super.partRemoved(partName, instance);
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override protected function getCurrentSkinState():String
 		{
 			if (_open) return "open";
@@ -81,6 +111,12 @@ package ee.spark.components.support
 			return super.getCurrentSkinState();
 		}
 		
+		/**
+		 * @private
+		 * 
+		 * If the new state is open, set the focus. If the old state was open, shift 
+		 * focus back to the owner.
+		 */
 		private function _skinCurrentStateChangeHandler(e:StateChangeEvent):void
 		{
 			if (e.newState == "open")
@@ -93,30 +129,38 @@ package ee.spark.components.support
 			}
 		}
 		
-		private function _menuRollOverHandler(e:MouseEvent):void
-		{
-			rollOverHandler(e);
-		}
-		
+		/**
+		 * @private
+		 */
 		private function _menuRollOutHandler(e:MouseEvent):void
 		{
 			rollOutHandler(e);
 		}
 		
+		/**
+		 * @private 
+		 */
 		private function _menuItemClickHandler(e:MenuEvent):void
 		{
 			//manual bubbling
 			dispatchEvent(e);
 		}
 		
+		/**
+		 * @private 
+		 */
 		private function _menuKeyDownHandler(e:KeyboardEvent):void
 		{
 			//manual bubbling
 			dispatchEvent(e);
-			//TODO fix
-			//if (open && (e.keyCode == Keyboard.ESCAPE || e.keyCode == Keyboard.LEFT)) open = false;
 		}
 		
+		/**
+		 * @private 
+		 * 
+		 * Determines if the given interactive object is a sub menu by walking 
+		 * the owner chain backwards.
+		 */
 		private function _isSubMenu(interactiveObject:InteractiveObject):Boolean
 		{
 			var isSubMenu:Boolean = false;
@@ -154,15 +198,12 @@ package ee.spark.components.support
 		
 		/**
 		 * Prevent rollout to remove hovered and if needed
-		 * dispatch rollout for menu
+		 * dispatch rollout for menu.
 		 */
 		override protected function rollOutHandler(e:MouseEvent):void
 		{
 			if (!_isSubMenu(e.relatedObject))
 			{
-				//TODO remove
-				//showsCaret = false;
-				
 				if (e.currentTarget == menu)
 				{
 					//we need to manually bubble for menu events
@@ -174,11 +215,17 @@ package ee.spark.components.support
 			}
 		}
 		
+		/**
+		 * @private
+		 */
 		private function _setDataProvider():void
 		{
 			if (menu) menu.dataProvider = new XMLListCollection(XML(data).children());	
 		}
 		
+		/**
+		 * If set to true will change the skin state to open
+		 */
 		public function get open():Boolean
 		{
 			return _open;
@@ -193,14 +240,9 @@ package ee.spark.components.support
 			}
 		}
 		
-		override public function set showsCaret(value:Boolean):void
-		{
-			if (showsCaret != value)
-			{
-				super.showsCaret = value;
-			}
-		}
-		
+		/**
+		 * If the menu is available, provides the menu with a new dataProvider.
+		 */
 		override public function set data(value:Object):void
 		{
 			if (data != value)

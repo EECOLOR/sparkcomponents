@@ -5,8 +5,14 @@ package ee.spark.events
 	import mx.controls.listClasses.IListItemRenderer;
 	import mx.events.ListEvent;
 	
+	/**
+	 * Event dispatched by menu and it's subclasses
+	 */
 	public class MenuEvent extends Event
 	{
+		/**
+		 * Dispatched when a menu leaf item is selected
+		 */
 		static public const MENU_ITEM_CLICK:String = "menuItemClick";
 		
 		public var item:Object;
@@ -17,6 +23,9 @@ package ee.spark.events
 			this.item = item;
 		}
 		
+		/**
+		 * Overridden in order to clone the MenuEvent.
+		 */
 		override public function clone():Event
 		{
 			var menuEvent:MenuEvent = new MenuEvent(type, bubbles, cancelable, item);

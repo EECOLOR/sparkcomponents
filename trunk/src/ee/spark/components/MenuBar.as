@@ -20,6 +20,18 @@ package ee.spark.components
 	
 	use namespace mx_internal;
 	
+	/**
+	 * The menu bar lays its items out in a horizontal fashion. The main difference 
+	 * with menu is that items remain open even if they are rolled out.
+	 * 
+	 * <p>The MenuBar control has the following default characteristics:</p>
+	 *  <table class="innertable">
+	 *     <tr><th>Characteristic</th><th>Description</th></tr>
+	 *     <tr><td>layout</td><td>HorizontalLayout</td></tr>
+	 *     <tr><td>preventSelection</td><td>false</td></tr>
+	 *     <tr><td>Default skin class</td><td>ee.spark.skins.MenuSkin</td></tr>
+	 *  </table>
+	 */
 	public class MenuBar extends Menu
 	{
 		private var _clearSelectionPending:Boolean;
@@ -30,6 +42,10 @@ package ee.spark.components
 			preventSelection = false;
 		}
 		
+		/**
+		 * Overridden in order to have different navigational controls, the 
+		 * layout is horizontal now.
+		 */
 		override protected function focusKeyDownHandler(e:KeyboardEvent):void
 		{
 			var navigationUnit:uint = e.keyCode;
@@ -66,6 +82,10 @@ package ee.spark.components
 			}	
 		}
 		
+		/**
+		 * Overridden in order to have different navigational controls, the 
+		 * layout is horizontal now.
+		 */		
 		override protected function noFocusKeyDownHandler(e:KeyboardEvent):void
 		{
 			switch (e.keyCode)
@@ -80,6 +100,10 @@ package ee.spark.components
 					var focussedItem:IFocusManagerComponent = focusManager.getFocus();
 					var preventAction:Boolean = false;
 					
+					/*
+						check if the current focussed item is a branch, if so
+						we need to prevent the next menu from showing.
+					*/
 					if (focussedItem is Menu)
 					{
 						var menu:Menu = Menu(focussedItem);
@@ -138,25 +162,34 @@ package ee.spark.components
 		{
 		}
 		
+		/**
+		 * Overridden in order to set the selected index
+		 */
 		override protected function openItem(item:MenuBranchItem):void
 		{
 			if (item) selectedIndex = dataProvider.getItemIndex(item.data);
 			super.openItem(item);
 		}
 		
+		/**
+		 * Overridden in order to remove the selected index
+		 */
 		override protected function closeItem(restoreCaret:Boolean = true):void
 		{
-			selectedIndex = -1;
 			super.closeItem();
+			selectedIndex = -1;
+			//we might need to invalidate the properties later
+			callLater(invalidateProperties);
 		}		
 		
+		/**
+		 * Removes the selected index and closes any open items
+		 */
 		override protected function menuItemClickHandler(e:MenuEvent):void
 		{
 			super.menuItemClickHandler(e);
 			
-			selectedIndex = -1;
 			closeItem();
-			callLater(invalidateProperties);
 		}
 	}
 }
