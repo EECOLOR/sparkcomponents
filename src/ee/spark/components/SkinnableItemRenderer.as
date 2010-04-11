@@ -17,7 +17,13 @@ package ee.spark.components
 	import spark.skins.spark.DefaultButtonSkin;
 	import spark.skins.spark.DefaultItemRenderer;
 	
+	/**
+	 * Dispatched when the itemIndex has changed
+	 */
 	[Event(name="itemIndexChanged", type="flash.events.Event")]
+	/**
+	 * Dispatched when the label has changed
+	 */
 	[Event(name="labelChanged", type="flash.events.Event")]
 	
 	[SkinState("dragging")]
@@ -27,10 +33,21 @@ package ee.spark.components
 	[SkinState("selected")]
 	[SkinState("hovered")]
 	[SkinState("normal")]
-	
+
+	/**
+	 * This class is very much like spark.components.supportClasses.ItemRenderer 
+	 * with the exception that it is skinnable. By default the 
+	 * ee.spark.skins.ItemRendererSkin is used (set using default.css).
+	 * 
+	 * <p>A minor difference with the original item renderer is that hovered is now 
+	 * a public property. This was done if you want external hover control.</p>
+	 */ 
 	public class SkinnableItemRenderer extends SkinnableComponent implements IItemRenderer, IHoverable
 	{
 		[SkinPart(required="false")]
+		/**
+		 * The component displaying the label.
+		 */
 		public var labelDisplay:TextBase;
 		
 		private var _data:Object;
@@ -47,6 +64,9 @@ package ee.spark.components
 			addEventListener(MouseEvent.ROLL_OUT, rollOutHandler);
 		}
 
+		/**
+		 * Overridden in order to set the label on the labelDisplay.
+		 */
 		override protected function partAdded(partName:String, instance:Object):void
 		{
 			super.partAdded(partName, instance);
@@ -61,6 +81,9 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * @inheritDoc
+		 */
 		override protected function getCurrentSkinState():String
 		{
 			if (dragging) return "dragging";
@@ -73,23 +96,37 @@ package ee.spark.components
 			return "normal";			
 		}
 		
-		protected function anyButtonDown(e:MouseEvent):Boolean
+		/**
+		 * @private
+		 * 
+		 * Determines if a button is down.
+		 */
+		private function _anyButtonDown(e:MouseEvent):Boolean
 		{
 			var type:String = e.type;
 			return e.buttonDown || (type == "middleMouseDown") || (type == "rightMouseDown"); 
 		}
 		
+		/**
+		 * Sets hovered to true if no button is down
+		 */
 		protected function rollOverHandler(e:MouseEvent):void
 		{
-			if (!anyButtonDown(e)) hovered = true;
+			if (!_anyButtonDown(e)) hovered = true;
 		}
 		
+		/**
+		 * Sets hovered to false
+		 */
 		protected function rollOutHandler(e:MouseEvent):void
 		{
 			hovered = false;
 		}
 		
 		[Bindable("dataChange")]
+		/**
+		 * @inheritDoc
+		 */
 		public function get data():Object
 		{
 			return _data;
@@ -104,6 +141,9 @@ package ee.spark.components
 			}
 		}
 
+		/**
+		 * @inheritDoc
+		 */
 		public function get dragging():Boolean
 		{
 			return _dragging;
@@ -118,6 +158,9 @@ package ee.spark.components
 			}
 		}
 
+		/**
+		 * @inheritDoc
+		 */
 		public function get hovered():Boolean
 		{
 			return _hovered;
@@ -133,6 +176,9 @@ package ee.spark.components
 		}
 		
 		[Bindable("itemIndexChanged")]
+		/**
+		 * @inheritDoc
+		 */
 		public function get itemIndex():int
 		{
 			return _itemIndex;
@@ -149,6 +195,9 @@ package ee.spark.components
 		}
 
 		[Bindable("labelChanged")]
+		/**
+		 * @inheritDoc
+		 */
 		public function get label():String
 		{
 			return _label;
@@ -166,6 +215,9 @@ package ee.spark.components
 			}
 		}
 
+		/**
+		 * @inheritDoc
+		 */
 		public function get selected():Boolean
 		{
 			return _selected;
@@ -180,6 +232,9 @@ package ee.spark.components
 			}
 		}
 
+		/**
+		 * @inheritDoc
+		 */
 		public function get showsCaret():Boolean
 		{
 			return _showsCaret;

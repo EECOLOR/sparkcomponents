@@ -21,8 +21,46 @@ package ee.spark.components
 	
 	use namespace mx_internal;
 	
+	/**
+	 * Dispatched when a menu leaf item is clicked.
+	 */
 	[Event(name="menuItemClick",type="ee.spark.events.MenuEvent")]
 	
+	/**
+	 * An extension of the list component to provide menu like capabilities.
+	 * 
+	 * <p>Requires xml an XMLListCollection as a dataProvider, the structure of the 
+	 * xml is like this:</p>
+	 * 
+	 * <p><pre>
+	 * &lt;menuItem label="menu item 1"&gt;
+	 * 	&lt;menuItem label="sub menu item 1" /&gt;
+	 * 	&lt;menuItem label="sub menu item 2" /&gt;
+	 * &lt;/menuItem&gt;
+	 * &lt;menuItem label="menu item 2" /&gt;
+	 * &lt;menuItem separator="true" /&gt;
+	 * &lt;menuItem label="menu item 3"&gt;
+	 * 	&lt;menuItem label="sub menu item 3" /&gt;
+	 * 	&lt;menuItem separator="true" /&gt;
+	 * 	&lt;menuItem label="sub menu item 4" /&gt;
+	 * &lt;/menuItem&gt;
+	 * </pre></p>
+	 * 
+	 * <p>The name of the xml element is free. A separator attribute determines if 
+	 * an element represents a separator.</p>
+	 * 
+	 * <p>The Menu control has the following default characteristics:</p>
+	 *  <table class="innertable">
+	 *     <tr><th>Characteristic</th><th>Description</th></tr>
+	 *     <tr><td>labelField</td><td>&#64;label</td></tr>
+	 *     <tr><td>itemRendererFunction</td><td>getItemRenderer</td></tr>
+	 *     <tr><td>useVirtualLayout</td><td>false</td></tr>
+	 *     <tr><td>preventSelection</td><td>true</td></tr>
+	 *     <tr><td>Default skin class</td><td>ee.spark.skins.MenuSkin</td></tr>
+	 *  </table>
+	 * 
+	 * @see #getItemRenderer()
+	 */
 	public class Menu extends List
 	{
 		static private const SEPARATOR:IFactory = new ClassFactory(MenuSeparator);
@@ -32,6 +70,11 @@ package ee.spark.components
 		private var _currentOpenItem:MenuBranchItem;
 		private var _currentHoveredItem:MenuLeafItem;
 		
+		/**
+		 * If set to true prevents item selection.
+		 * 
+		 * @default true
+		 */
 		protected var preventSelection:Boolean;
 
 		public function Menu()
@@ -43,6 +86,9 @@ package ee.spark.components
 			addEventListener(MenuEvent.MENU_ITEM_CLICK, menuItemClickHandler);
 		}
 
+		/**
+		 * Overridden in order to add handlers for RendererExistenceEvent of dataGroup
+		 */
 		override protected function partAdded(partName:String, instance:Object):void
 		{
 			super.partAdded(partName, instance);
@@ -58,6 +104,9 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * Overridden in order to remove handlers for RendererExistenceEvent of dataGroup
+		 */		
 		override protected function partRemoved(partName:String, instance:Object):void
 		{
 			switch (instance)
@@ -73,17 +122,30 @@ package ee.spark.components
 			super.partRemoved(partName, instance);
 		}
 		
+		/**
+		 * Utility method to determine if the given data object represents a separator.
+		 */ 
 		protected function isSeparator(data:Object):Boolean
 		{
 			var xml:XML = XML(data);
 			return xml ? xml.hasOwnProperty("@separator") && xml.@separator.toString() == "true" : false;
 		}
 		
+		/**
+		 * Utility method to determine if the given data object represents a branch.
+		 */ 
 		protected function isBranch(data:Object):Boolean
 		{
 			return data ? XML(data).children().length() > 0 : false;
 		}
 		
+		/**
+		 * Determines which item renderer to use for the given object.
+		 * 
+		 * @see MenuLeafItem
+		 * @see MenuBranchItem
+		 * @see MenuSeparator
+		 */ 
 		protected function getItemRenderer(data:Object):IFactory
 		{
 			var itemRenderer:IFactory;
@@ -103,7 +165,7 @@ package ee.spark.components
 		}
 		
 		/**
-		 * Adds listeners for roll over and rollout
+		 * @private
 		 */
 		private function _rendererAddHandler(e:RendererExistenceEvent):void
 		{
@@ -116,6 +178,9 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * @private
+		 */
 		private function _rendererRemoveHandler(e:RendererExistenceEvent):void
 		{
 			var renderer:IVisualElement = e.renderer;
@@ -130,7 +195,8 @@ package ee.spark.components
 		/**
 		 * Overridden to prevent selection and dispatch menu click event
 		 * 
-		 * We screwed up drag possibilities by overriding it like this
+		 * <p>We screwed up drag possibilities by overriding it like this. If needed 
+		 * in the future we could add code here to enable dragging</p> 
 		 */
 		override protected function item_mouseDownHandler(e:MouseEvent):void
 		{
@@ -143,6 +209,10 @@ package ee.spark.components
 			}
 		}		
 		
+		/**
+		 * Resets the current caret index and sets hovered to true for the rolled 
+		 * over item. 
+		 */ 
 		protected function rendererRollOverHandler(e:MouseEvent):void
 		{
 			if (caretIndex > -1) setCurrentCaretIndex(-1);
@@ -156,6 +226,9 @@ package ee.spark.components
 			}
 		}
 
+		/**
+		 * Sets the hovered to false for the rolled out item.
+		 */ 
 		protected function rendererRollOutHandler(e:MouseEvent):void
 		{
 			var currentTarget:Object = e.currentTarget;
@@ -167,18 +240,26 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * Opens the given item if it's a MenuBranchItem
+		 * 
+		 * @see MenuBranchItem
+		 */
 		protected function leafRollOver(item:MenuLeafItem, e:MouseEvent):void
 		{
 			if (item is MenuBranchItem) openItem(MenuBranchItem(item));
 		}
 		
+		/**
+		 * Closes any open item
+		 */
 		protected function leafRollOut(item:MenuLeafItem, e:MouseEvent):void
 		{
 			closeItem(false);
 		}
 		
 		/**
-		 * Custom key handling
+		 * Overridden in order to provide custom key handling.
 		 */
 		override protected function keyDownHandler(e:KeyboardEvent):void
 		{
@@ -193,6 +274,10 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * Called when the current menu has focus. Handles navigation through 
+		 * the component.
+		 */
 		protected function focusKeyDownHandler(e:KeyboardEvent):void
 		{
 			var navigationUnit:uint = e.keyCode;
@@ -235,6 +320,9 @@ package ee.spark.components
 			}	
 		}
 		
+		/**
+		 * Called when the menu does not have focus.
+		 */
 		protected function noFocusKeyDownHandler(e:KeyboardEvent):void
 		{
 			switch (e.keyCode)
@@ -254,6 +342,10 @@ package ee.spark.components
 			}
 		}		
 		
+		/**
+		 * Handles selecting an item. If the item is a branch it might be opened or closed.
+		 * If the item is a leaf, a MenuEvent.MENU_ITEM_CLICK is dispatched.
+		 */
 		protected function handleSelect(itemRenderer:IItemRenderer):void
 		{
 			var data:Object = itemRenderer.data;
@@ -292,6 +384,9 @@ package ee.spark.components
 			}
 		}		
 		
+		/**
+		 * If an item is open, shift the focus to the open item.
+		 */
 		override public function setFocus():void
 		{
 			if (_currentOpenItem && _currentOpenItem.open)
@@ -304,6 +399,9 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * Opens the given item
+		 */
 		protected function openItem(item:MenuBranchItem):void
 		{
 			if (item != _currentOpenItem)
@@ -314,6 +412,12 @@ package ee.spark.components
 			}
 		}		
 		
+		/**
+		 * Closes the current item.
+		 * 
+		 * @param restoreCaret 		If set to true, the closing of the item restores the 
+		 * 							caret index to the index of the last open item.
+		 */ 
 		protected function closeItem(restoreCaret:Boolean = true):void
 		{
 			if (_currentOpenItem)
@@ -330,6 +434,9 @@ package ee.spark.components
 			}
 		}		
 		
+		/**
+		 * @private
+		 */
 		private function _addHover(item:MenuLeafItem):void
 		{
 			if (item != _currentHoveredItem)
@@ -340,6 +447,9 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * @private
+		 */
 		private function _removeHover():void
 		{
 			if (_currentHoveredItem)
@@ -349,6 +459,9 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * Moves the caret index forward, ignoring separators.
+		 */
 		public function moveNext():void
 		{
 			var currentCaretIndex:int = caretIndex;
@@ -381,11 +494,9 @@ package ee.spark.components
 			}
 		}
 		
-		protected function caretOut():void
-		{
-			closeItem();
-		}
-		
+		/**
+		 * Moves the caret index backwards, ignoring separators.
+		 */
 		public function movePrevious():void
 		{
 			
@@ -422,11 +533,25 @@ package ee.spark.components
 			}
 		}
 		
+		/**
+		 * Called when the caret moves away from an element. Closes the current open element.
+		 */
+		protected function caretOut():void
+		{
+			closeItem();
+		}		
+		
+		/**
+		 * Resets the current caret index.
+		 */
 		protected function menuItemClickHandler(e:MenuEvent):void
 		{
 			setCurrentCaretIndex(-1);
 		}
 		
+		/**
+		 * Returns the current open item.
+		 */
 		protected function get currentOpenItem():MenuBranchItem
 		{
 			return _currentOpenItem;

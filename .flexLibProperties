@@ -12,7 +12,6 @@
     <classEntry path="ee.spark.components.support.MenuLeafItem"/>
     <classEntry path="ee.spark.skins.MenuSkin"/>
     <classEntry path="layouts.VariableRowHeightVerticalLayout"/>
-    <classEntry path="ee.spark.components.support.MinimalLayoutElement"/>
     <classEntry path="ee.spark.events.MenuEvent"/>
     <classEntry path="ee.spark.components.support.IHoverable"/>
   </includeClasses>
