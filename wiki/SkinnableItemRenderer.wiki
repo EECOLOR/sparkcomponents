@@ -56,7 +56,7 @@
 </s:HGroup>
 }}}
 
-_tests.support.CustomSkinnableItemRenderer_
+_tests.support.!CustomSkinnableItemRenderer_
 {{{
 package tests.support
 {
