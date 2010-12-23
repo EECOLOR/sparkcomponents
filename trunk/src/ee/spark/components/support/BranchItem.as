@@ -7,7 +7,7 @@ package ee.spark.components.support
 	 */
 	[SkinState("open")]	
 	
-	public class BranchItem extends LeafItem
+	public class BranchItem extends LeafItem implements IOpenable
 	{
 		private var _open:Boolean;
 		

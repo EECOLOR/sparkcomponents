@@ -14,6 +14,7 @@
     <classEntry path="ee.spark.components.support.IHoverable"/>
     <classEntry path="ee.spark.components.support.BranchItem"/>
     <classEntry path="ee.spark.components.support.LeafItem"/>
+    <classEntry path="ee.spark.components.support.IOpenable"/>
   </includeClasses>
   <includeResources>
     <resourceEntry destPath="defaults.css" sourcePath="defaults.css"/>
