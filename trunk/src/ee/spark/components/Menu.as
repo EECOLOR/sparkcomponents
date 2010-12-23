@@ -1,5 +1,7 @@
 package ee.spark.components
 {
+	import ee.spark.components.support.BranchItem;
+	import ee.spark.components.support.LeafItem;
 	import ee.spark.components.support.MenuBranchItem;
 	import ee.spark.components.support.MenuLeafItem;
 	import ee.spark.components.support.MenuSeparator;
@@ -9,6 +11,8 @@ package ee.spark.components
 	import flash.events.MouseEvent;
 	import flash.ui.Keyboard;
 	
+	import mx.collections.IList;
+	import mx.collections.XMLListCollection;
 	import mx.core.ClassFactory;
 	import mx.core.IFactory;
 	import mx.core.IVisualElement;
@@ -67,8 +71,8 @@ package ee.spark.components
 		static private const BRANCH:IFactory = new ClassFactory(MenuBranchItem);
 		static private const LEAF:IFactory = new ClassFactory(MenuLeafItem);
 		
-		private var _currentOpenItem:MenuBranchItem;
-		private var _currentHoveredItem:MenuLeafItem;
+		private var _currentOpenItem:BranchItem;
+		private var _currentHoveredItem:LeafItem;
 		
 		/**
 		 * If set to true prevents item selection.
@@ -140,6 +144,14 @@ package ee.spark.components
 		}
 		
 		/**
+		 * Utility method to determine the children of the given data object.
+		 */ 
+		protected function getChildren(data:Object):IList
+		{
+			return new XMLListCollection(XML(data).children());
+		}
+		
+		/**
 		 * Determines which item renderer to use for the given object.
 		 * 
 		 * @see MenuLeafItem
@@ -162,6 +174,19 @@ package ee.spark.components
 			}
 			
 			return itemRenderer;
+		}
+		
+		/**
+		 * Overridden in order to set the children of the MenuBranchItem
+		 */
+		override public function updateRenderer(renderer:IVisualElement, itemIndex:int, data:Object):void
+		{
+			super.updateRenderer(renderer, itemIndex, data);
+			
+			if (renderer is MenuBranchItem)
+			{
+				MenuBranchItem(renderer).children = getChildren(data);
+			}
 		}
 		
 		/**
@@ -219,10 +244,10 @@ package ee.spark.components
 			
 			var currentTarget:Object = e.currentTarget;
 			
-			if (currentTarget is MenuLeafItem)
+			if (currentTarget is LeafItem)
 			{
-				_addHover(MenuLeafItem(currentTarget));
-				leafRollOver(MenuLeafItem(currentTarget), e);
+				_addHover(LeafItem(currentTarget));
+				leafRollOver(LeafItem(currentTarget), e);
 			}
 		}
 
@@ -233,27 +258,27 @@ package ee.spark.components
 		{
 			var currentTarget:Object = e.currentTarget;
 			
-			if (currentTarget is MenuLeafItem)
+			if (currentTarget is LeafItem)
 			{
 				_removeHover();
-				leafRollOut(MenuLeafItem(currentTarget), e);
+				leafRollOut(LeafItem(currentTarget), e);
 			}
 		}
 		
 		/**
-		 * Opens the given item if it's a MenuBranchItem
+		 * Opens the given item if it's a BranchItem
 		 * 
-		 * @see MenuBranchItem
+		 * @see BranchItem
 		 */
-		protected function leafRollOver(item:MenuLeafItem, e:MouseEvent):void
+		protected function leafRollOver(item:LeafItem, e:MouseEvent):void
 		{
-			if (item is MenuBranchItem) openItem(MenuBranchItem(item));
+			if (item is BranchItem) openItem(BranchItem(item));
 		}
 		
 		/**
 		 * Closes any open item
 		 */
-		protected function leafRollOut(item:MenuLeafItem, e:MouseEvent):void
+		protected function leafRollOut(item:LeafItem, e:MouseEvent):void
 		{
 			closeItem(false);
 		}
@@ -310,9 +335,9 @@ package ee.spark.components
 					{
 						renderer = dataGroup ? dataGroup.getElementAt(caretIndex) : null;
 						
-						if (renderer is MenuBranchItem)
+						if (renderer is BranchItem)
 						{
-							openItem(MenuBranchItem(renderer));
+							openItem(BranchItem(renderer));
 						}
 						break;
 					}
@@ -363,11 +388,11 @@ package ee.spark.components
 						closeItem();
 					} else
 					{
-						openItem(MenuBranchItem(itemRenderer));
+						openItem(BranchItem(itemRenderer));
 					}
 				} else
 				{
-					openItem(MenuBranchItem(itemRenderer));
+					openItem(BranchItem(itemRenderer));
 				}
 			} else
 			{
@@ -392,7 +417,8 @@ package ee.spark.components
 			if (_currentOpenItem && _currentOpenItem.open)
 			{
 				//transfer the focus to the menu
-				if (_currentOpenItem.menu) focusManager.setFocus(_currentOpenItem.menu);
+				var openMenuBranchItem:MenuBranchItem = MenuBranchItem(_currentOpenItem);
+				if (openMenuBranchItem.menu) focusManager.setFocus(openMenuBranchItem.menu);
 			} else
 			{
 				super.setFocus();
@@ -402,7 +428,7 @@ package ee.spark.components
 		/**
 		 * Opens the given item
 		 */
-		protected function openItem(item:MenuBranchItem):void
+		protected function openItem(item:BranchItem):void
 		{
 			if (item != _currentOpenItem)
 			{
@@ -437,7 +463,7 @@ package ee.spark.components
 		/**
 		 * @private
 		 */
-		private function _addHover(item:MenuLeafItem):void
+		private function _addHover(item:LeafItem):void
 		{
 			if (item != _currentHoveredItem)
 			{
@@ -552,7 +578,7 @@ package ee.spark.components
 		/**
 		 * Returns the current open item.
 		 */
-		protected function get currentOpenItem():MenuBranchItem
+		protected function get currentOpenItem():BranchItem
 		{
 			return _currentOpenItem;
 		}
