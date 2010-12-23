@@ -10,7 +10,7 @@ package ee.spark.components.support
 	 * 
 	 * <p>By default the ee.spark.skins.MenuLeafItemSkin is set (using default.css).</p> 
 	 */
-	public class MenuLeafItem extends SkinnableItemRenderer
+	public class MenuLeafItem extends LeafItem
 	{
 		public function MenuLeafItem()
 		{

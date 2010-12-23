@@ -1,7 +1,7 @@
 package ee.spark.components
 {
-	import ee.spark.components.support.MenuBranchItem;
-	import ee.spark.components.support.MenuLeafItem;
+	import ee.spark.components.support.BranchItem;
+	import ee.spark.components.support.LeafItem;
 	import ee.spark.events.MenuEvent;
 	
 	import flash.display.DisplayObjectContainer;
@@ -72,9 +72,9 @@ package ee.spark.components
 					{
 						renderer = dataGroup ? dataGroup.getElementAt(caretIndex) : null;
 						
-						if (renderer is MenuBranchItem)
+						if (renderer is BranchItem)
 						{
-							openItem(MenuBranchItem(renderer));
+							openItem(BranchItem(renderer));
 						}
 						break;
 					}
@@ -127,11 +127,11 @@ package ee.spark.components
 		/**
 		 * Only open on rollover if another branch is open
 		 */
-		override protected function leafRollOver(item:MenuLeafItem, e:MouseEvent):void
+		override protected function leafRollOver(item:LeafItem, e:MouseEvent):void
 		{
 			if (currentOpenItem)
 			{
-				if (item is MenuBranchItem) openItem(MenuBranchItem(item));
+				if (item is BranchItem) openItem(BranchItem(item));
 			}
 		}
 		
@@ -144,14 +144,14 @@ package ee.spark.components
 			if (currentOpenItem && value > -1)
 			{
 				var renderer:IVisualElement = dataGroup ? dataGroup.getElementAt(value) : null;
-				if (renderer is MenuBranchItem) openItem(MenuBranchItem(renderer));
+				if (renderer is BranchItem) openItem(BranchItem(renderer));
 			}			
 		}
 		
 		/**
 		 * Prevent closing on roll out
 		 */
-		override protected function leafRollOut(item:MenuLeafItem, e:MouseEvent):void
+		override protected function leafRollOut(item:LeafItem, e:MouseEvent):void
 		{
 		}
 		
@@ -165,7 +165,7 @@ package ee.spark.components
 		/**
 		 * Overridden in order to set the selected index
 		 */
-		override protected function openItem(item:MenuBranchItem):void
+		override protected function openItem(item:BranchItem):void
 		{
 			if (item) selectedIndex = dataProvider.getItemIndex(item.data);
 			super.openItem(item);

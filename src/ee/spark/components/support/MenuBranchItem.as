@@ -8,15 +8,11 @@ package ee.spark.components.support
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	
+	import mx.collections.IList;
 	import mx.collections.XMLListCollection;
 	import mx.core.IUIComponent;
 	import mx.events.StateChangeEvent;
 	import mx.managers.IFocusManagerComponent;
-	
-	/**
-	 * Indicates the sub menu is visible, or open.
-	 */
-	[SkinState("open")]
 	
 	/**
 	 * This item renderer represents a branch in the menu. In other words, a renderer 
@@ -25,7 +21,7 @@ package ee.spark.components.support
 	 * <p>The default skin is ee.spark.skins.MenuBranchItem. If the host component is 
 	 * a MenuBar, the default skin ee.spark.skins.MenuBarBranchItem.</p>
 	 */
-	public class MenuBranchItem extends MenuLeafItem
+	public class MenuBranchItem extends BranchItem
 	{
 		[SkinPart(required="true")]
 		/**
@@ -33,7 +29,7 @@ package ee.spark.components.support
 		 */
 		public var menu:Menu;
 		
-		private var _open:Boolean;
+		private var _children:IList;
 		
 		public function MenuBranchItem()
 		{
@@ -76,7 +72,7 @@ package ee.spark.components.support
 					menu.addEventListener(MouseEvent.ROLL_OUT, _menuRollOutHandler);
 					menu.addEventListener(MenuEvent.MENU_ITEM_CLICK, _menuItemClickHandler);
 					menu.addEventListener(KeyboardEvent.KEY_DOWN, _menuKeyDownHandler);
-					_setDataProvider();
+					_updateDataProvider();
 					break;
 				}
 			}
@@ -99,16 +95,6 @@ package ee.spark.components.support
 			}
 			
 			super.partRemoved(partName, instance);
-		}
-		
-		/**
-		 * @inheritDoc
-		 */
-		override protected function getCurrentSkinState():String
-		{
-			if (_open) return "open";
-			
-			return super.getCurrentSkinState();
 		}
 		
 		/**
@@ -218,38 +204,33 @@ package ee.spark.components.support
 		/**
 		 * @private
 		 */
-		private function _setDataProvider():void
+		private function _updateDataProvider():void
 		{
-			if (menu) menu.dataProvider = new XMLListCollection(XML(data).children());	
+			if (menu) menu.dataProvider = _children;	
 		}
 		
-		/**
-		 * If set to true will change the skin state to open
-		 */
-		public function get open():Boolean
+		public function get children():IList
 		{
-			return _open;
+			return _children;
 		}
 		
-		public function set open(value:Boolean):void
+		public function set children(value:IList):void
 		{
-			if (_open != value)
+			if (_children != value)
 			{
-				_open = value;
-				invalidateSkinState();
+				_children = value;
+				_updateDataProvider();
 			}
 		}
 		
 		/**
-		 * If the menu is available, provides the menu with a new dataProvider.
+		 * @inheritDoc
 		 */
 		override public function set data(value:Object):void
 		{
 			if (data != value)
 			{
 				super.data = value;
-				
-				_setDataProvider();
 			}
 		}
 	}

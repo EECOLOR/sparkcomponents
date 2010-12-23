@@ -9,10 +9,11 @@
     <classEntry path="ee.spark.components.MenuBar"/>
     <classEntry path="ee.spark.components.support.MenuSeparator"/>
     <classEntry path="ee.spark.skins.MenuSeparatorSkin"/>
-    <classEntry path="ee.spark.components.support.MenuLeafItem"/>
     <classEntry path="ee.spark.skins.MenuSkin"/>
     <classEntry path="ee.spark.events.MenuEvent"/>
     <classEntry path="ee.spark.components.support.IHoverable"/>
+    <classEntry path="ee.spark.components.support.BranchItem"/>
+    <classEntry path="ee.spark.components.support.LeafItem"/>
   </includeClasses>
   <includeResources>
     <resourceEntry destPath="defaults.css" sourcePath="defaults.css"/>
