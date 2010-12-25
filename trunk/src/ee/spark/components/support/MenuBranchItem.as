@@ -1,7 +1,7 @@
 package ee.spark.components.support
 {
 	import ee.spark.components.Menu;
-	import ee.spark.events.MenuEvent;
+	import ee.spark.events.ItemEvent;
 	
 	import flash.display.DisplayObjectContainer;
 	import flash.display.InteractiveObject;
@@ -70,7 +70,7 @@ package ee.spark.components.support
 				{
 					menu.owner = this;
 					menu.addEventListener(MouseEvent.ROLL_OUT, _menuRollOutHandler);
-					menu.addEventListener(MenuEvent.MENU_ITEM_CLICK, _menuItemClickHandler);
+					menu.addEventListener(ItemEvent.ITEM_SELECT, _itemSelectHandler);
 					menu.addEventListener(KeyboardEvent.KEY_DOWN, _menuKeyDownHandler);
 					_updateDataProvider();
 					break;
@@ -88,7 +88,7 @@ package ee.spark.components.support
 				case menu:
 				{
 					menu.removeEventListener(MouseEvent.ROLL_OUT, _menuRollOutHandler);
-					menu.removeEventListener(MenuEvent.MENU_ITEM_CLICK, _menuItemClickHandler);
+					menu.removeEventListener(ItemEvent.ITEM_SELECT, _itemSelectHandler);
 					menu.removeEventListener(KeyboardEvent.KEY_DOWN, _menuKeyDownHandler);
 					break;
 				}
@@ -126,7 +126,7 @@ package ee.spark.components.support
 		/**
 		 * @private 
 		 */
-		private function _menuItemClickHandler(e:MenuEvent):void
+		private function _itemSelectHandler(e:ItemEvent):void
 		{
 			//manual bubbling
 			dispatchEvent(e);

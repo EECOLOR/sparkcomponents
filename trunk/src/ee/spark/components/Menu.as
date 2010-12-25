@@ -1,34 +1,26 @@
 package ee.spark.components
 {
 	import ee.spark.components.support.BranchItem;
+	import ee.spark.components.support.HierarchicalList;
 	import ee.spark.components.support.LeafItem;
 	import ee.spark.components.support.MenuBranchItem;
 	import ee.spark.components.support.MenuLeafItem;
 	import ee.spark.components.support.MenuSeparator;
-	import ee.spark.events.MenuEvent;
+	import ee.spark.events.ItemEvent;
 	
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.ui.Keyboard;
 	
-	import mx.collections.IList;
-	import mx.collections.XMLListCollection;
 	import mx.core.ClassFactory;
 	import mx.core.IFactory;
 	import mx.core.IVisualElement;
 	import mx.core.mx_internal;
 	
-	import spark.components.IItemRenderer;
-	import spark.components.List;
 	import spark.core.NavigationUnit;
 	import spark.events.RendererExistenceEvent;
 	
 	use namespace mx_internal;
-	
-	/**
-	 * Dispatched when a menu leaf item is clicked.
-	 */
-	[Event(name="menuItemClick",type="ee.spark.events.MenuEvent")]
 	
 	/**
 	 * An extension of the list component to provide menu like capabilities.
@@ -65,31 +57,39 @@ package ee.spark.components
 	 * 
 	 * @see #getItemRenderer()
 	 */
-	public class Menu extends List
+	public class Menu extends HierarchicalList
 	{
 		static private const SEPARATOR:IFactory = new ClassFactory(MenuSeparator);
 		static private const BRANCH:IFactory = new ClassFactory(MenuBranchItem);
 		static private const LEAF:IFactory = new ClassFactory(MenuLeafItem);
 		
-		private var _currentOpenItem:BranchItem;
 		private var _currentHoveredItem:LeafItem;
 		
-		/**
-		 * If set to true prevents item selection.
-		 * 
-		 * @default true
-		 */
-		protected var preventSelection:Boolean;
-
 		public function Menu()
 		{
 			labelField = "@label";
 			itemRendererFunction = getItemRenderer;
 			useVirtualLayout = false;
 			preventSelection = true;
-			addEventListener(MenuEvent.MENU_ITEM_CLICK, menuItemClickHandler);
+			addEventListener(ItemEvent.ITEM_SELECT, itemSelectHandler);
 		}
 
+		/**
+		 * @inheritDoc
+		 */
+		override protected function get branchItemRendererFactory():IFactory
+		{
+			return BRANCH;
+		}
+		
+		/**
+		 * @inheritDoc
+		 */
+		override protected function get leafItemRendererFactory():IFactory
+		{
+			return LEAF;
+		}
+		
 		/**
 		 * Overridden in order to add handlers for RendererExistenceEvent of dataGroup
 		 */
@@ -136,41 +136,22 @@ package ee.spark.components
 		}
 		
 		/**
-		 * Utility method to determine if the given data object represents a branch.
-		 */ 
-		protected function isBranch(data:Object):Boolean
-		{
-			return data ? XML(data).children().length() > 0 : false;
-		}
-		
-		/**
-		 * Utility method to determine the children of the given data object.
-		 */ 
-		protected function getChildren(data:Object):IList
-		{
-			return new XMLListCollection(XML(data).children());
-		}
-		
-		/**
 		 * Determines which item renderer to use for the given object.
 		 * 
 		 * @see MenuLeafItem
 		 * @see MenuBranchItem
 		 * @see MenuSeparator
 		 */ 
-		protected function getItemRenderer(data:Object):IFactory
+		override protected function getItemRenderer(data:Object):IFactory
 		{
 			var itemRenderer:IFactory;
 			
 			if (isSeparator(data))
 			{
 				itemRenderer = SEPARATOR;
-			} else if (isBranch(data))
-			{
-				itemRenderer = BRANCH;
 			} else
 			{
-				itemRenderer = LEAF;
+				itemRenderer = super.getItemRenderer(data);
 			}
 			
 			return itemRenderer;
@@ -185,7 +166,7 @@ package ee.spark.components
 			
 			if (renderer is MenuBranchItem)
 			{
-				MenuBranchItem(renderer).children = getChildren(data);
+				MenuBranchItem(renderer).children = model.getChildren(data);
 			}
 		}
 		
@@ -216,23 +197,6 @@ package ee.spark.components
 				renderer.removeEventListener(MouseEvent.ROLL_OUT, rendererRollOutHandler);
 			}
 		}
-		
-		/**
-		 * Overridden to prevent selection and dispatch menu click event
-		 * 
-		 * <p>We screwed up drag possibilities by overriding it like this. If needed 
-		 * in the future we could add code here to enable dragging</p> 
-		 */
-		override protected function item_mouseDownHandler(e:MouseEvent):void
-		{
-			var renderer:Object = e.currentTarget;
-			
-			if (renderer is IItemRenderer)
-			{
-				var itemRenderer:IItemRenderer = IItemRenderer(renderer);
-				handleSelect(itemRenderer);
-			}
-		}		
 		
 		/**
 		 * Resets the current caret index and sets hovered to true for the rolled 
@@ -282,9 +246,9 @@ package ee.spark.components
 		{
 			closeItem(false);
 		}
-		
+
 		/**
-		 * Overridden in order to provide custom key handling.
+		 * Overridden in order to make a distinction between focussed an non-focussed events
 		 */
 		override protected function keyDownHandler(e:KeyboardEvent):void
 		{
@@ -308,41 +272,24 @@ package ee.spark.components
 			var navigationUnit:uint = e.keyCode;
 			var renderer:Object;
 			
-			if (navigationUnit == Keyboard.SPACE)
+			switch (navigationUnit)
 			{
-				renderer = dataGroup ? dataGroup.getElementAt(caretIndex) : null;
-				
-				if (renderer is IItemRenderer)
+				case NavigationUnit.UP:
 				{
-					handleSelect(IItemRenderer(renderer));
+					movePrevious();
+					break;
 				}
-				e.preventDefault();
-			} else if (NavigationUnit.isNavigationUnit(navigationUnit))
-			{
-				switch (navigationUnit)
+				case NavigationUnit.DOWN:
 				{
-					case NavigationUnit.UP:
-					{
-						movePrevious();
-						break;
-					}
-					case NavigationUnit.DOWN:
-					{
-						moveNext();
-						break;
-					}
-					case NavigationUnit.RIGHT:
-					{
-						renderer = dataGroup ? dataGroup.getElementAt(caretIndex) : null;
-						
-						if (renderer is BranchItem)
-						{
-							openItem(BranchItem(renderer));
-						}
-						break;
-					}
+					moveNext();
+					break;
 				}
-			}	
+				default:
+				{
+					super.keyDownHandler(e);
+					break;
+				}
+			}
 		}
 		
 		/**
@@ -367,98 +314,32 @@ package ee.spark.components
 			}
 		}		
 		
-		/**
-		 * Handles selecting an item. If the item is a branch it might be opened or closed.
-		 * If the item is a leaf, a MenuEvent.MENU_ITEM_CLICK is dispatched.
-		 */
-		protected function handleSelect(itemRenderer:IItemRenderer):void
+		override protected function dispatchSelectEvent(data:Object):void
 		{
-			var data:Object = itemRenderer.data;
-			
-			var shouldSelect:Boolean = !preventSelection;
-			
-			if (isBranch(data))
+			if (!isSeparator(data))
 			{
-				if (shouldSelect)
-				{
-					var proposedSelectedIndex:int = dataProvider.getItemIndex(itemRenderer.data);
-					
-					if (selectedIndex == proposedSelectedIndex)
-					{
-						closeItem();
-					} else
-					{
-						openItem(BranchItem(itemRenderer));
-					}
-				} else
-				{
-					openItem(BranchItem(itemRenderer));
-				}
-			} else
-			{
-				if (!isSeparator(data))
-				{
-					var menuEvent:MenuEvent = new MenuEvent(MenuEvent.MENU_ITEM_CLICK, true, false, itemRenderer.data);
-					
-					//dispatch roll out event in order to close the list
-					dispatchEvent(new MouseEvent(MouseEvent.ROLL_OUT));
-					
-					//dispatch the click event
-					dispatchEvent(menuEvent);
-				}
+				//dispatch roll out event in order to close the list
+				dispatchEvent(new MouseEvent(MouseEvent.ROLL_OUT));
+				
+				super.dispatchSelectEvent(data);
 			}
-		}		
+		}
 		
 		/**
 		 * If an item is open, shift the focus to the open item.
 		 */
 		override public function setFocus():void
 		{
-			if (_currentOpenItem && _currentOpenItem.open)
+			if (currentOpenItem && currentOpenItem.open)
 			{
 				//transfer the focus to the menu
-				var openMenuBranchItem:MenuBranchItem = MenuBranchItem(_currentOpenItem);
+				var openMenuBranchItem:MenuBranchItem = MenuBranchItem(currentOpenItem);
 				if (openMenuBranchItem.menu) focusManager.setFocus(openMenuBranchItem.menu);
 			} else
 			{
 				super.setFocus();
 			}
 		}
-		
-		/**
-		 * Opens the given item
-		 */
-		protected function openItem(item:BranchItem):void
-		{
-			if (item != _currentOpenItem)
-			{
-				if (_currentOpenItem) _currentOpenItem.open = false;
-				_currentOpenItem = item;
-				if (_currentOpenItem) _currentOpenItem.open = true;
-			}
-		}		
-		
-		/**
-		 * Closes the current item.
-		 * 
-		 * @param restoreCaret 		If set to true, the closing of the item restores the 
-		 * 							caret index to the index of the last open item.
-		 */ 
-		protected function closeItem(restoreCaret:Boolean = true):void
-		{
-			if (_currentOpenItem)
-			{
-				if (restoreCaret) 
-				{
-					setCurrentCaretIndex(dataProvider.getItemIndex(_currentOpenItem.data));	
-				} else
-				{
-					setCurrentCaretIndex(-1);
-				}
-				_currentOpenItem.open = false;
-				_currentOpenItem = null;
-			}
-		}		
 		
 		/**
 		 * @private
@@ -570,17 +451,9 @@ package ee.spark.components
 		/**
 		 * Resets the current caret index.
 		 */
-		protected function menuItemClickHandler(e:MenuEvent):void
+		protected function itemSelectHandler(e:ItemEvent):void
 		{
 			setCurrentCaretIndex(-1);
-		}
-		
-		/**
-		 * Returns the current open item.
-		 */
-		protected function get currentOpenItem():BranchItem
-		{
-			return _currentOpenItem;
 		}
 	}
 }

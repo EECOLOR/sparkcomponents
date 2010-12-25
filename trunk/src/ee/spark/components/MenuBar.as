@@ -2,15 +2,12 @@ package ee.spark.components
 {
 	import ee.spark.components.support.BranchItem;
 	import ee.spark.components.support.LeafItem;
-	import ee.spark.events.MenuEvent;
+	import ee.spark.events.ItemEvent;
 	
-	import flash.display.DisplayObjectContainer;
-	import flash.display.InteractiveObject;
 	import flash.events.KeyboardEvent;
 	import flash.events.MouseEvent;
 	import flash.ui.Keyboard;
 	
-	import mx.core.IUIComponent;
 	import mx.core.IVisualElement;
 	import mx.core.mx_internal;
 	import mx.managers.IFocusManagerComponent;
@@ -107,7 +104,7 @@ package ee.spark.components
 					if (focussedItem is Menu)
 					{
 						var menu:Menu = Menu(focussedItem);
-						if (isBranch(menu.dataProvider.getItemAt(menu.caretIndex)))
+						if (model.hasChildren(menu.dataProvider.getItemAt(menu.caretIndex)))
 						{
 							preventAction = true;
 						}
@@ -131,7 +128,7 @@ package ee.spark.components
 		{
 			if (currentOpenItem)
 			{
-				if (item is BranchItem) openItem(BranchItem(item));
+				super.leafRollOver(item, e);
 			}
 		}
 		
@@ -185,9 +182,9 @@ package ee.spark.components
 		/**
 		 * Removes the selected index and closes any open items
 		 */
-		override protected function menuItemClickHandler(e:MenuEvent):void
+		override protected function itemSelectHandler(e:ItemEvent):void
 		{
-			super.menuItemClickHandler(e);
+			super.itemSelectHandler(e);
 			
 			closeItem();
 		}
