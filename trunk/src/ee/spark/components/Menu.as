@@ -17,6 +17,7 @@ package ee.spark.components
 	import mx.core.IVisualElement;
 	import mx.core.mx_internal;
 	
+	import spark.components.IItemRenderer;
 	import spark.core.NavigationUnit;
 	import spark.events.RendererExistenceEvent;
 	
@@ -64,6 +65,7 @@ package ee.spark.components
 		static private const LEAF:IFactory = new ClassFactory(MenuLeafItem);
 		
 		private var _currentHoveredItem:LeafItem;
+		private var _currentOpenItem:BranchItem;
 		
 		public function Menu()
 		{
@@ -89,6 +91,41 @@ package ee.spark.components
 		{
 			return LEAF;
 		}
+		
+		/**
+		 * Opens the given item
+		 */
+		protected function openItem(item:BranchItem):void
+		{
+			if (item != _currentOpenItem)
+			{
+				if (_currentOpenItem) _currentOpenItem.open = false;
+				_currentOpenItem = item;
+				if (_currentOpenItem) _currentOpenItem.open = true;
+			}
+		}
+		
+		/**
+		 * Closes the current item.
+		 * 
+		 * @param restoreCaret 		If set to true, the closing of the item restores the 
+		 * 							caret index to the index of the last open item.
+		 */ 
+		protected function closeItem(restoreCaret:Boolean = true):void
+		{
+			if (_currentOpenItem)
+			{
+				if (restoreCaret) 
+				{
+					setCurrentCaretIndex(dataProvider.getItemIndex(_currentOpenItem.data));	
+				} else
+				{
+					setCurrentCaretIndex(-1);
+				}
+				_currentOpenItem.open = false;
+				_currentOpenItem = null;
+			}
+		}			
 		
 		/**
 		 * Overridden in order to add handlers for RendererExistenceEvent of dataGroup
@@ -248,6 +285,23 @@ package ee.spark.components
 		}
 
 		/**
+		 * Overridden to prevent selection and dispatch menu click event
+		 * 
+		 * <p>We screwed up drag possibilities by overriding it like this. If needed 
+		 * in the future we could add code here to enable dragging</p> 
+		 */
+		override protected function item_mouseDownHandler(e:MouseEvent):void
+		{
+			var renderer:Object = e.currentTarget;
+			
+			if (renderer is IItemRenderer)
+			{
+				var itemRenderer:IItemRenderer = IItemRenderer(renderer);
+				handleSelect(itemRenderer);
+			}
+		}			
+		
+		/**
 		 * Overridden in order to make a distinction between focussed an non-focussed events
 		 */
 		override protected function keyDownHandler(e:KeyboardEvent):void
@@ -272,24 +326,41 @@ package ee.spark.components
 			var navigationUnit:uint = e.keyCode;
 			var renderer:Object;
 			
-			switch (navigationUnit)
+			if (navigationUnit == Keyboard.SPACE)
 			{
-				case NavigationUnit.UP:
+				renderer = dataGroup ? dataGroup.getElementAt(caretIndex) : null;
+				
+				if (renderer is IItemRenderer)
 				{
-					movePrevious();
-					break;
+					handleSelect(IItemRenderer(renderer));
 				}
-				case NavigationUnit.DOWN:
+				e.preventDefault();
+			} else if (NavigationUnit.isNavigationUnit(navigationUnit))
+			{
+				switch (navigationUnit)
 				{
-					moveNext();
-					break;
+					case NavigationUnit.UP:
+					{
+						movePrevious();
+						break;
+					}
+					case NavigationUnit.DOWN:
+					{
+						moveNext();
+						break;
+					}					
+					case NavigationUnit.RIGHT:
+					{
+						renderer = dataGroup ? dataGroup.getElementAt(caretIndex) : null;
+						
+						if (renderer is BranchItem)
+						{
+							openItem(BranchItem(renderer));
+						}
+						break;
+					}
 				}
-				default:
-				{
-					super.keyDownHandler(e);
-					break;
-				}
-			}
+			}	
 		}
 		
 		/**
@@ -324,6 +395,39 @@ package ee.spark.components
 				super.dispatchSelectEvent(data);
 			}
 		}
+		
+		/**
+		 * Handles selecting an item. If the item is a branch it might be opened or closed.
+		 * If the item is a leaf, a ItemEvent.ITEM_SELECT is dispatched.
+		 */
+		protected function handleSelect(itemRenderer:IItemRenderer):void
+		{
+			var data:Object = itemRenderer.data;
+			
+			var shouldSelect:Boolean = !preventSelection;
+			
+			if (model.hasChildren(data))
+			{
+				if (shouldSelect)
+				{
+					var proposedSelectedIndex:int = dataProvider.getItemIndex(itemRenderer.data);
+					
+					if (selectedIndex == proposedSelectedIndex)
+					{
+						closeItem();
+					} else
+					{
+						openItem(BranchItem(itemRenderer));
+					}
+				} else
+				{
+					openItem(BranchItem(itemRenderer));
+				}
+			} else
+			{
+				dispatchSelectEvent(itemRenderer.data);
+			}
+		}		
 		
 		/**
 		 * If an item is open, shift the focus to the open item.
@@ -454,6 +558,14 @@ package ee.spark.components
 		protected function itemSelectHandler(e:ItemEvent):void
 		{
 			setCurrentCaretIndex(-1);
+		}
+		
+		/**
+		 * Returns the current open item.
+		 */
+		protected function get currentOpenItem():BranchItem
+		{
+			return _currentOpenItem;
 		}
 	}
 }

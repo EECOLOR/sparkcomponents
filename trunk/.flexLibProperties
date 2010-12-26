@@ -18,6 +18,12 @@
     <classEntry path="ee.spark.components.support.IHierarchicalModel"/>
     <classEntry path="ee.spark.components.support.XMLHierarchicalModel"/>
     <classEntry path="ee.spark.components.support.HierarchicalList"/>
+    <classEntry path="ee.spark.components.Tree"/>
+    <classEntry path="ee.spark.events.DisclosureEvent"/>
+    <classEntry path="ee.spark.components.support.TreeBranchItem"/>
+    <classEntry path="ee.spark.components.support.HierarchicalDataProvider"/>
+    <classEntry path="ee.spark.components.support.IHierarchicalDataProvider"/>
+    <classEntry path="ee.spark.components.support.TreeLeafItem"/>
   </includeClasses>
   <includeResources>
     <resourceEntry destPath="defaults.css" sourcePath="defaults.css"/>

@@ -12,6 +12,11 @@ package ee.spark.components.support
 			_xmlListCollection = xmlListCollection;
 		}
 		
+		public function canHaveChildren(object:Object):Boolean
+		{
+			return true;
+		}
+		
 		public function hasChildren(object:Object):Boolean
 		{
 			return object ? (object as XML).children().length() > 0 : false;
@@ -22,14 +27,28 @@ package ee.spark.components.support
 			return new XMLListCollection((object as XML).children());
 		}
 		
-		public function canHaveChildren(object:Object):Boolean
+		public function getParent(object:Object):Object
 		{
-			return true;
+			return (object as XML).parent();
+		}
+		
+		public function getDepth(object:Object):uint
+		{
+			var depth:uint = 0;
+			var parent:Object = getParent(object);
+			
+			while (parent)
+			{
+				depth++;
+				parent = getParent(parent);
+			}
+			
+			return depth;
 		}
 		
 		public function get source():IList
 		{
-			return null;
+			return _xmlListCollection;
 		}
 	}
 }
